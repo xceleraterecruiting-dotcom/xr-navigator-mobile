@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, StyleSheet, ViewStyle } from 'react-native'
-import { colors, borderRadius, spacing, fontSize } from '@/constants/theme'
+import { colors, borderRadius, spacing, fontSize, fontFamily } from '@/constants/theme'
 
 type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'primary'
 
@@ -22,31 +22,40 @@ export function Badge({ label, variant = 'default', style }: BadgeProps) {
 
 const styles = StyleSheet.create({
   badge: {
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.sm + 2,
     paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
+    borderRadius: borderRadius.sm,
     alignSelf: 'flex-start',
   },
   default: {
-    backgroundColor: colors.card,
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderLight,
   },
   success: {
-    backgroundColor: `${colors.success}20`,
+    backgroundColor: colors.successLight,
+    borderWidth: 1,
+    borderColor: `${colors.success}40`,
   },
   warning: {
-    backgroundColor: `${colors.warning}20`,
+    backgroundColor: colors.warningLight,
+    borderWidth: 1,
+    borderColor: `${colors.warning}40`,
   },
   error: {
-    backgroundColor: `${colors.error}20`,
+    backgroundColor: colors.errorLight,
+    borderWidth: 1,
+    borderColor: `${colors.error}40`,
   },
   primary: {
-    backgroundColor: `${colors.primary}20`,
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: colors.borderAccent,
   },
   text: {
     fontSize: fontSize.xs,
-    fontWeight: '600',
+    fontFamily: fontFamily.bold,
+    letterSpacing: 0.5,
   },
   defaultText: {
     color: colors.textMuted,

@@ -7,7 +7,7 @@ import {
   TextInputProps,
   ViewStyle,
 } from 'react-native'
-import { colors, borderRadius, spacing, fontSize } from '@/constants/theme'
+import { colors, borderRadius, spacing, fontSize, fontFamily} from '@/constants/theme'
 
 interface InputProps extends TextInputProps {
   label?: string
@@ -28,6 +28,8 @@ export const Input = forwardRef<TextInput, InputProps>(
             style,
           ]}
           placeholderTextColor={colors.textDim}
+          accessibilityLabel={label || props.placeholder}
+          accessibilityHint={error || undefined}
           {...props}
         />
         {error && <Text style={styles.error}>{error}</Text>}
@@ -45,7 +47,7 @@ const styles = StyleSheet.create({
   label: {
     color: colors.text,
     fontSize: fontSize.sm,
-    fontWeight: '500',
+    fontFamily: fontFamily.medium,
     marginBottom: spacing.xs,
   },
   input: {

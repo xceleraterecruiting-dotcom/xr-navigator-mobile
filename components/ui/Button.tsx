@@ -7,8 +7,8 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native'
-import * as Haptics from 'expo-haptics'
-import { colors, borderRadius, fontSize, spacing } from '@/constants/theme'
+import { haptics } from '@/lib/haptics'
+import { colors, borderRadius, fontSize, spacing, fontFamily } from '@/constants/theme'
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
 
@@ -34,7 +34,7 @@ export function Button({
   fullWidth = false,
 }: ButtonProps) {
   const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    haptics.light()
     onPress()
   }
 
@@ -52,6 +52,9 @@ export function Button({
       onPress={handlePress}
       disabled={isDisabled}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
       {loading ? (
         <ActivityIndicator
@@ -104,7 +107,9 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: fontSize.base,
-    fontWeight: '600',
+    fontFamily: fontFamily.bold,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   primaryText: {
     color: colors.background,

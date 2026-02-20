@@ -6,18 +6,19 @@ import {
   ViewStyle,
   StyleProp,
 } from 'react-native'
-import { colors, borderRadius, spacing } from '@/constants/theme'
+import { colors, borderRadius, spacing, shadows } from '@/constants/theme'
 
 interface CardProps {
   children: React.ReactNode
   style?: StyleProp<ViewStyle>
   onPress?: () => void
   noPadding?: boolean
+  elevated?: boolean
 }
 
-export function Card({ children, style, onPress, noPadding }: CardProps) {
+export function Card({ children, style, onPress, noPadding, elevated }: CardProps) {
   const cardContent = (
-    <View style={[styles.card, noPadding && styles.noPadding, style]}>
+    <View style={[styles.card, elevated && styles.elevated, noPadding && styles.noPadding, style]}>
       {children}
     </View>
   )
@@ -40,10 +41,15 @@ export function Card({ children, style, onPress, noPadding }: CardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.md,
+    ...shadows.sm,
+  },
+  elevated: {
+    backgroundColor: colors.cardElevated,
+    ...shadows.md,
   },
   noPadding: {
     padding: 0,
