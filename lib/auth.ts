@@ -5,23 +5,22 @@ export const tokenCache = {
   async getToken(key: string): Promise<string | null> {
     try {
       return await SecureStore.getItemAsync(key)
-    } catch (err) {
-      console.error('Failed to get token:', err)
+    } catch {
       return null
     }
   },
   async saveToken(key: string, value: string): Promise<void> {
     try {
       await SecureStore.setItemAsync(key, value)
-    } catch (err) {
-      console.error('Failed to save token:', err)
+    } catch {
+      // Token save failure is non-critical — user will re-auth
     }
   },
   async clearToken(key: string): Promise<void> {
     try {
       await SecureStore.deleteItemAsync(key)
-    } catch (err) {
-      console.error('Failed to clear token:', err)
+    } catch {
+      // Token clear failure is non-critical
     }
   },
 }
