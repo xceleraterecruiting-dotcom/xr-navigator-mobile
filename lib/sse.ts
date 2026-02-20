@@ -9,116 +9,125 @@ export function setSSEAuthFunction(tokenGetter: () => Promise<string | null>) {
   getToken = tokenGetter
 }
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+export interface StreamDonePayload {
+  conversationId?: string
+}
 
 /**
- * Stream XR Insight responses
- * APPROACH 1: Try fetch with ReadableStream (preferred)
- * APPROACH 2: Fallback to polling if streaming fails
+ * Stream XR Insight responses via SSE using XMLHttpRequest
+ *
+ * React Native's fetch() does not support ReadableStream / response.body.getReader().
+ * XMLHttpRequest fires onprogress with partial responseText, enabling real SSE streaming.
+ *
+ * Backend SSE format:
+ *   data: {"text":"chunk"}\n\n     — text chunk
+ *   data: {"done":true, "conversationId":"..."}\n\n  — stream complete
  */
 export async function streamInsight(
   messages: Message[],
   onChunk: (text: string) => void,
-  onDone: () => void,
-  onError: (err: Error) => void
+  onDone: (payload: StreamDonePayload) => void,
+  onError: (err: Error) => void,
+  conversationId?: string | null
 ): Promise<() => void> {
   const token = await getToken()
   let cancelled = false
+  let processedLength = 0
 
-  const run = async () => {
-    try {
-      // Try streaming first
-      const response = await fetch(`${API_URL}/api/insight`, {
-        method: 'POST',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ messages }),
-      })
+  const xhr = new XMLHttpRequest()
+  xhr.open('POST', `${API_URL}/api/insight`)
+  xhr.setRequestHeader('Content-Type', 'application/json')
+  if (token) {
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+  }
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${await response.text()}`)
-      }
+  // Process SSE lines from the progressive responseText
+  const processChunk = () => {
+    if (cancelled) return
 
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder()
+    const newData = xhr.responseText.substring(processedLength)
+    processedLength = xhr.responseText.length
 
-      if (!reader) throw new Error('No reader available')
+    if (!newData) return
 
-      while (!cancelled) {
-        const { done, value } = await reader.read()
-        if (done) {
-          onDone()
-          break
+    const lines = newData.split('\n')
+    for (const line of lines) {
+      if (cancelled) break
+      const trimmed = line.trim()
+      if (!trimmed.startsWith('data: ')) continue
+
+      const jsonStr = trimmed.slice(6) // Remove 'data: ' prefix
+      try {
+        const parsed = JSON.parse(jsonStr)
+
+        if (parsed.done) {
+          onDone({
+            conversationId: parsed.conversationId || undefined,
+          })
+          cancelled = true
+          return
         }
-        const chunk = decoder.decode(value)
-        const lines = chunk.split('\n').filter(line => line.startsWith('data: '))
 
-        for (const line of lines) {
-          if (cancelled) break
-          const data = line.replace('data: ', '')
-          if (data === '[DONE]') {
-            onDone()
-            return
-          }
-          onChunk(data)
+        if (parsed.text) {
+          onChunk(parsed.text)
         }
-      }
-    } catch (streamError) {
-      console.warn('Streaming failed, falling back to polling:', streamError)
-      if (!cancelled) {
-        // Fallback: Non-streaming request
-        await pollInsight(messages, onChunk, onDone, onError, () => cancelled)
+      } catch {
+        // Non-JSON data line — skip
       }
     }
   }
 
-  run()
+  xhr.onprogress = processChunk
+
+  xhr.onload = () => {
+    if (cancelled) return
+    // Process any remaining data
+    processChunk()
+    // If we never got a {done:true}, call onDone with no payload
+    if (!cancelled) {
+      onDone({})
+    }
+  }
+
+  xhr.onerror = () => {
+    if (!cancelled) {
+      onError(new Error('Stream connection failed'))
+    }
+  }
+
+  xhr.ontimeout = () => {
+    if (!cancelled) {
+      onError(new Error('Stream timed out'))
+    }
+  }
+
+  // Handle HTTP errors at both headers received (2) and complete (4)
+  xhr.onreadystatechange = () => {
+    if ((xhr.readyState === 2 || xhr.readyState === 4) && xhr.status >= 400 && !cancelled) {
+      cancelled = true
+      const statusMessage = xhr.statusText || 'Request failed'
+      const errorMessage = xhr.status === 401
+        ? 'Session expired. Please sign in again.'
+        : xhr.status === 429
+        ? 'Message limit reached. Please try again later.'
+        : xhr.status >= 500
+        ? 'Server error. Please try again.'
+        : `Error: ${statusMessage}`
+      onError(new Error(errorMessage))
+      xhr.abort()
+    }
+  }
+
+  xhr.timeout = 120000 // 2 minute timeout
+
+  xhr.send(JSON.stringify({
+    messages,
+    ...(conversationId ? { conversationId } : {}),
+  }))
 
   // Return cancel function
   return () => {
     cancelled = true
-  }
-}
-
-/**
- * Polling fallback - get complete response and simulate streaming
- */
-async function pollInsight(
-  messages: Message[],
-  onChunk: (text: string) => void,
-  onDone: () => void,
-  onError: (err: Error) => void,
-  isCancelled: () => boolean
-) {
-  const token = await getToken()
-
-  try {
-    const response = await fetch(`${API_URL}/api/insight/sync`, {
-      method: 'POST',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ messages }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${await response.text()}`)
-    }
-
-    const data = await response.json()
-
-    // Simulate streaming with word-by-word reveal
-    const words = data.content.split(' ')
-    for (let i = 0; i < words.length; i++) {
-      if (isCancelled()) return
-      await delay(30) // 30ms per word
-      onChunk(words.slice(0, i + 1).join(' '))
-    }
-    onDone()
-  } catch (err) {
-    onError(err as Error)
+    xhr.abort()
   }
 }

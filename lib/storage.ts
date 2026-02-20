@@ -8,8 +8,8 @@ export const storageHelpers = {
   set: async (key: string, value: unknown) => {
     try {
       await AsyncStorage.setItem(key, JSON.stringify(value))
-    } catch (error) {
-      console.error('Storage set error:', error)
+    } catch {
+      // Storage set failure is non-critical
     }
   },
 
@@ -26,8 +26,8 @@ export const storageHelpers = {
   delete: async (key: string) => {
     try {
       await AsyncStorage.removeItem(key)
-    } catch (error) {
-      console.error('Storage delete error:', error)
+    } catch {
+      // Storage delete failure is non-critical
     }
   },
 
@@ -44,8 +44,8 @@ export const storageHelpers = {
   clearAll: async () => {
     try {
       await AsyncStorage.clear()
-    } catch (error) {
-      console.error('Storage clear error:', error)
+    } catch {
+      // Storage clear failure is non-critical
     }
   },
 }

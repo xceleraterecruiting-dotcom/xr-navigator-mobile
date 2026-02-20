@@ -7,7 +7,7 @@ export function initSentry() {
       dsn,
       environment: __DEV__ ? 'development' : 'production',
       tracesSampleRate: 0.2,
-      attachScreenshot: true,
+      attachScreenshot: false,
       enableAutoSessionTracking: true,
     })
   }
