@@ -15,7 +15,31 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.xrnavigator.app"
+      "bundleIdentifier": "com.xrnavigator.app",
+      "buildNumber": "1",
+      "privacyPolicyUrl": "https://www.xceleraterecruiting.com/privacy",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "XR Navigator needs access to your photo library to save recruiting graphics and share them on social media.",
+        "NSPhotoLibraryAddUsageDescription": "XR Navigator needs permission to save recruiting graphics to your photo library.",
+        "NSUserTrackingUsageDescription": "XR Navigator uses analytics to improve your recruiting experience. Your data is never sold.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": [
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "CA92.1"
+            ]
+          },
+          {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": [
+              "C617.1"
+            ]
+          }
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +47,10 @@
         "backgroundColor": "#0A0A0A"
       },
       "package": "com.xrnavigator.app",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "com.google.android.gms.permission.AD_ID"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -31,10 +58,45 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-dev-client",
+      "@sentry/react-native",
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "XR Navigator uses analytics to improve your recruiting experience. Your data is never sold."
+        }
+      ],
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "XR Navigator needs access to your camera roll to select game film for AI evaluation.",
+          "cameraPermission": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "sounds": []
+        }
+      ]
     ],
+    "updates": {
+      "url": "https://u.expo.dev/e99a5a41-17b2-4d70-9add-cb56ae069209"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e99a5a41-17b2-4d70-9add-cb56ae069209"
+      }
+    },
+    "owner": "xceleraterecruiting"
   }
 }
