@@ -40,19 +40,17 @@ export const useCoachesStore = create<CoachesStore>((set, get) => ({
   page: 1,
 
   fetchCoaches: async (reset = false) => {
-    const { filters, page, coaches } = get()
+    const { filters } = get()
     if (reset) {
-      set({ page: 1, coaches: [], hasMore: true })
+      set({ coaches: [], hasMore: false })
     }
 
     set({ isLoading: true, error: null })
     try {
-      const currentPage = reset ? 1 : page
-      const newCoaches = await api.getCoaches({ ...filters, page: currentPage, limit: 20 })
+      const newCoaches = await api.getCoaches({ ...filters, limit: 200 })
       set({
-        coaches: reset ? newCoaches : [...coaches, ...newCoaches],
-        hasMore: newCoaches.length === 20,
-        page: currentPage + 1,
+        coaches: newCoaches,
+        hasMore: false,
         isLoading: false,
       })
     } catch (err) {
@@ -153,6 +151,5 @@ export const useCoachesStore = create<CoachesStore>((set, get) => ({
   },
 }))
 
-// Selectors
-export const useSavedCoachIds = () =>
-  useCoachesStore((state) => new Set(state.savedCoaches.map((sc) => sc.collegeCoachId)))
+// Selectors - return the savedCoaches array directly (stable reference)
+export const useSavedCoaches = () => useCoachesStore((state) => state.savedCoaches)

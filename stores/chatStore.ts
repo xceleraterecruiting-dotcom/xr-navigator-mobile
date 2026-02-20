@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { api } from '@/lib/api'
-import { streamInsight } from '@/lib/sse'
+import { streamInsight, type StreamDonePayload } from '@/lib/sse'
 import type { Message, Conversation } from '@/types'
 
 interface ChatState {
@@ -11,6 +11,7 @@ interface ChatState {
   isStreaming: boolean
   streamingContent: string
   error: string | null
+  pendingPrompt: string | null
 }
 
 interface ChatActions {
@@ -20,6 +21,7 @@ interface ChatActions {
   deleteConversation: (id: string) => Promise<void>
   startNewChat: () => void
   clearError: () => void
+  setPendingPrompt: (prompt: string | null) => void
 }
 
 type ChatStore = ChatState & ChatActions
@@ -34,6 +36,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   isStreaming: false,
   streamingContent: '',
   error: null,
+  pendingPrompt: null,
+
+  setPendingPrompt: (prompt) => {
+    set({ pendingPrompt: prompt })
+  },
 
   sendMessage: async (content) => {
     // Cancel any existing stream
@@ -60,12 +67,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     try {
       cancelStream = await streamInsight(
         allMessages,
-        // onChunk
+        // onChunk — append text (backend sends individual chunks, not cumulative)
         (text) => {
-          set({ streamingContent: text })
+          set((state) => ({ streamingContent: state.streamingContent + text }))
         },
         // onDone
-        () => {
+        (payload: StreamDonePayload) => {
           const streamedContent = get().streamingContent
           const assistantMessage: Message = {
             id: `msg-${Date.now()}`,
@@ -76,8 +83,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             messages: [...state.messages, assistantMessage],
             isStreaming: false,
             streamingContent: '',
+            // Store conversationId if backend sent it
+            ...(payload.conversationId
+              ? { currentConversationId: payload.conversationId }
+              : {}),
           }))
           cancelStream = null
+
+          // Refresh conversation list so new conversation shows up
+          get().fetchConversations()
         },
         // onError
         (err) => {
@@ -87,7 +101,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             streamingContent: '',
           })
           cancelStream = null
-        }
+        },
+        // Pass conversationId for follow-up messages
+        get().currentConversationId
       )
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to send message'
