@@ -56,6 +56,9 @@ export interface OAuthResult {
   error?: string
 }
 
+// Google's iOS OAuth redirect URI (reverse client ID)
+const GOOGLE_IOS_REDIRECT_URI = 'com.googleusercontent.apps.713302284190-tklbb3anjpht8oij0v0h1v1i38ck9rgc:/oauth2redirect/google'
+
 /**
  * Start OAuth flow for email provider
  */
@@ -72,10 +75,16 @@ export async function startEmailOAuth(provider: 'gmail' | 'outlook'): Promise<OA
     pendingState = state
     pendingProvider = provider
 
+    // Determine redirect URI based on provider
+    // Gmail on iOS requires Google's reverse client ID scheme
+    const redirectUri = provider === 'gmail'
+      ? GOOGLE_IOS_REDIRECT_URI
+      : `xrnavigator://oauth/${provider}`
+
     // Open browser for OAuth
     const result = await WebBrowser.openAuthSessionAsync(
       authUrl,
-      `xrnavigator://oauth/${provider}`
+      redirectUri
     )
 
     if (result.type !== 'success') {

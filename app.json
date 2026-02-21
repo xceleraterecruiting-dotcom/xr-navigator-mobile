@@ -22,7 +22,14 @@
         "NSPhotoLibraryUsageDescription": "XR Navigator needs access to your photo library to save recruiting graphics and share them on social media.",
         "NSPhotoLibraryAddUsageDescription": "XR Navigator needs permission to save recruiting graphics to your photo library.",
         "NSUserTrackingUsageDescription": "XR Navigator uses analytics to improve your recruiting experience. Your data is never sold.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.713302284190-tklbb3anjpht8oij0v0h1v1i38ck9rgc"
+            ]
+          }
+        ]
       },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": [
