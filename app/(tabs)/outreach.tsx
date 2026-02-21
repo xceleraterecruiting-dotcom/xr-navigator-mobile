@@ -415,10 +415,27 @@ export default function OutreachScreen() {
     return (
       <TouchableOpacity
         activeOpacity={0.7}
+        style={styles.coachCardTouchable}
         onPress={() => {
           setSelectedCoach(item)
           setGeneratedDM('')
           haptics.light()
+          // Auto-generate DM when opening coach modal
+          const isFollowUp = item.dmStatus === 'dm_sent' || item.dmStatus === 'follow_up_sent'
+          setIsGeneratingDM(true)
+          api.generateTwitterDM({
+            coachId: item.coach.id,
+            coachName: item.coach.name,
+            school: item.coach.school,
+            title: item.coach.title,
+            isFollowUp,
+          }).then(data => {
+            setGeneratedDM(data.message)
+          }).catch(() => {
+            // Silently fail, user can manually generate
+          }).finally(() => {
+            setIsGeneratingDM(false)
+          })
         }}
       >
         <Card style={styles.coachCard}>
@@ -1132,6 +1149,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
     gap: spacing.sm,
+  },
+  coachCardTouchable: {
+    width: '100%',
   },
   coachCard: {
     gap: spacing.xs,
