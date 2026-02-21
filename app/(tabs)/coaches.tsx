@@ -395,6 +395,15 @@ export default function CoachesScreen() {
         )}
       </ScrollView>
 
+      {/* Results count */}
+      {coaches.length > 0 && !isLoading && (
+        <View style={styles.resultsCountWrap}>
+          <Text style={styles.resultsCount}>
+            {coaches.length}+ coaches {selectedDivision || selectedPosition || selectedConference || selectedRegion || selectedState ? 'matching filters' : 'available'}
+          </Text>
+        </View>
+      )}
+
       {/* Usage */}
       {usage?.coachViews && (
         <View style={styles.usageBannerWrap}>
@@ -757,8 +766,9 @@ const styles = StyleSheet.create({
   },
   screenHeader: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    backgroundColor: colors.background,
   },
   headerRow: {
     flexDirection: 'row',
@@ -768,17 +778,20 @@ const styles = StyleSheet.create({
     fontSize: fontSize['2xl'],
     fontFamily: fontFamily.bold,
     color: colors.text,
+    letterSpacing: -0.5,
   },
   screenSubtitle: {
     fontSize: fontSize.sm,
-    color: colors.textDim,
+    color: colors.textMuted,
     fontFamily: fontFamily.medium,
-    marginTop: 2,
+    marginTop: 4,
+    marginLeft: spacing.sm + spacing.xl, // Align with title (after menu icon)
   },
   // Search
   searchContainer: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.md,
   },
   searchInputWrap: {
     flexDirection: 'row',
@@ -786,10 +799,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.xl,
+    paddingHorizontal: spacing.md + 2,
     gap: spacing.sm,
     ...shadows.sm,
+    height: 52,
   },
   searchInput: {
     flex: 1,
@@ -799,28 +813,32 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   clearButton: {
-    padding: spacing.xs,
+    padding: spacing.sm,
   },
   // Filter pickers row
   filtersRow: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+    maxHeight: 44,
   },
   filtersRowContent: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    gap: spacing.sm,
+    gap: spacing.sm + 4,
+    paddingVertical: spacing.xs,
   },
   filterPicker: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.md + 4,
+    paddingVertical: spacing.sm + 4,
     borderRadius: borderRadius.full,
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
+    minWidth: 80,
+    justifyContent: 'center',
   },
   filterPickerActive: {
     backgroundColor: colors.primary,
@@ -830,12 +848,14 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontFamily: fontFamily.semibold,
     color: colors.textSecondary,
+    textAlign: 'center',
   },
   filterPickerTextActive: {
     color: colors.background,
   },
   clearFilters: {
-    padding: spacing.xs,
+    padding: spacing.sm,
+    marginLeft: spacing.xs,
   },
   // Picker modal
   pickerModal: {
@@ -876,6 +896,16 @@ const styles = StyleSheet.create({
   pickerOptionTextActive: {
     color: colors.primary,
   },
+  resultsCountWrap: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  resultsCount: {
+    fontSize: fontSize.xs,
+    fontFamily: fontFamily.medium,
+    color: colors.textDim,
+    letterSpacing: 0.3,
+  },
   usageBannerWrap: {
     paddingHorizontal: spacing.lg,
     marginBottom: spacing.sm,
@@ -883,91 +913,101 @@ const styles = StyleSheet.create({
   // List
   listContent: {
     paddingHorizontal: spacing.lg,
-    gap: spacing.sm,
+    gap: spacing.md,
     paddingTop: spacing.sm,
   },
-  // Coach card — matches web layout
+  // Coach card — modern clean design
   coachCard: {
     backgroundColor: colors.card,
     borderRadius: borderRadius.xl,
     borderWidth: 1,
     borderColor: colors.border,
-    ...shadows.sm,
+    ...shadows.md,
+    overflow: 'hidden',
   },
   coachCardInner: {
-    padding: spacing.md,
-    gap: spacing.sm,
+    padding: spacing.md + 2,
+    gap: spacing.sm + 2,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   coachName: {
     fontSize: fontSize.lg,
     fontFamily: fontFamily.bold,
     color: colors.text,
     flex: 1,
+    letterSpacing: -0.3,
   },
   divBadge: {
-    paddingHorizontal: spacing.sm + 2,
-    paddingVertical: 3,
-    borderRadius: borderRadius.sm,
+    paddingHorizontal: spacing.sm + 4,
+    paddingVertical: 4,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
   },
   divBadgeText: {
     fontSize: 10,
     fontFamily: fontFamily.bold,
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
   },
   coachTitle: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
-    fontFamily: fontFamily.regular,
+    fontFamily: fontFamily.medium,
+    marginTop: -2,
   },
   schoolRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.sm + 2,
+    marginTop: spacing.xs,
   },
   logoWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: borderRadius.sm,
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.md,
     backgroundColor: colors.cardElevated,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   schoolName: {
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    fontFamily: fontFamily.medium,
+    color: colors.text,
+    fontFamily: fontFamily.semibold,
     flex: 1,
   },
   confText: {
     fontSize: fontSize.xs,
     color: colors.textDim,
-    fontFamily: fontFamily.regular,
+    fontFamily: fontFamily.medium,
+    backgroundColor: colors.cardElevated,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
   },
-  // Action buttons row — matches web (Email, Twitter, Save)
+  // Action buttons row
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: spacing.sm,
-    paddingTop: spacing.xs,
+    gap: spacing.sm + 2,
+    paddingTop: spacing.sm,
     borderTopWidth: 1,
     borderTopColor: colors.borderLight,
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
   },
   actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: spacing.sm + 4,
-    paddingVertical: spacing.xs + 2,
-    borderRadius: borderRadius.md,
+    gap: 5,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.lg,
     backgroundColor: colors.cardElevated,
     borderWidth: 1,
     borderColor: colors.border,
@@ -1003,21 +1043,23 @@ const styles = StyleSheet.create({
   empty: {
     paddingVertical: spacing.xl * 2,
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
+    paddingHorizontal: spacing.xl,
   },
   emptyTitle: {
     fontSize: fontSize.xl,
     fontFamily: fontFamily.bold,
     color: colors.text,
-    letterSpacing: 0.5,
+    letterSpacing: -0.3,
+    marginTop: spacing.sm,
   },
   emptyText: {
     color: colors.textMuted,
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     fontFamily: fontFamily.regular,
     textAlign: 'center',
-    paddingHorizontal: spacing.xl,
-    lineHeight: 20,
+    lineHeight: 22,
+    maxWidth: 280,
   },
   // Loading
   loading: {
