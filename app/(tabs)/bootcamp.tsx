@@ -402,14 +402,45 @@ export default function BootcampScreen() {
           ))}
         </View>
 
+        {/* Loading state for week detail */}
+        {selectedWeek && isLoadingWeek && !weekDetail && (
+          <View style={[styles.section, { alignItems: 'center', paddingVertical: spacing.xl }]}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[styles.loadingWeekText, { marginTop: spacing.md }]}>
+              Loading Week {selectedWeek}...
+            </Text>
+          </View>
+        )}
+
+        {/* Locked week preview */}
+        {weekDetail && selectedWeek && !weekDetail.isUnlocked && !currentWeekObj?.isUnlocked && (
+          <View style={styles.section}>
+            <View style={styles.lockedWeekCard}>
+              <Ionicons name="lock-closed" size={32} color={colors.textMuted} />
+              <Text style={styles.lockedWeekTitle}>Week {selectedWeek} Locked</Text>
+              <Text style={styles.lockedWeekDesc}>
+                Complete the previous weeks to unlock this content.
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Week Detail & Coaches */}
-        {weekDetail && selectedWeek && currentWeekObj && !currentWeekObj.isCompleted && currentWeekObj.isUnlocked && (
+        {/* Show for any week that has detail loaded and is unlocked (from either source) */}
+        {weekDetail && selectedWeek && (weekDetail.isUnlocked || currentWeekObj?.isUnlocked) && (
           <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.section}>
             <View style={styles.weekDetailHeader}>
               <Text style={styles.sectionTitle}>Week {selectedWeek} Schools</Text>
-              <Text style={styles.coachCount}>
-                {weekDetail.coaches ? groupCoachesBySchool(weekDetail.coaches).length : 0} schools
-              </Text>
+              {weekDetail.isCompleted ? (
+                <View style={styles.completedBadge}>
+                  <Ionicons name="checkmark-circle" size={14} color={colors.success} />
+                  <Text style={styles.completedBadgeText}>Completed</Text>
+                </View>
+              ) : (
+                <Text style={styles.coachCount}>
+                  {weekDetail.coaches ? groupCoachesBySchool(weekDetail.coaches).length : 0} schools
+                </Text>
+              )}
             </View>
 
             {weekDetail.tips && weekDetail.tips.length > 0 && (
@@ -857,5 +888,43 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: spacing.sm,
+  },
+
+  // Locked week
+  lockedWeekCard: {
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.xl,
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  lockedWeekTitle: {
+    fontSize: fontSize.lg,
+    fontFamily: fontFamily.bold,
+    color: colors.text,
+  },
+  lockedWeekDesc: {
+    fontSize: fontSize.sm,
+    fontFamily: fontFamily.regular,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+
+  // Completed badge
+  completedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: `${colors.success}15`,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+  },
+  completedBadgeText: {
+    fontSize: fontSize.xs,
+    fontFamily: fontFamily.bold,
+    color: colors.success,
   },
 })
